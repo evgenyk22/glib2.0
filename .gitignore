@@ -1,0 +1,7 @@
+CMakeFiles/*
+.vscode/*
+.viminfo
+Makefile
+CMakeCache.txt
+libgliblearn_proj
+.gdb_history
