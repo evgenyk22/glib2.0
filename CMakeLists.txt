@@ -8,7 +8,7 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 
 
 include_directories(${GLIB_INCLUDE_DIRS} /mnt/c/learn/bitfield  glist )
-link_directories(${GLIB_LIBRARY_DIRS} /mnt/c/learn/bitfield )
+link_directories(${GLIB_LIBRARY_DIRS} /mnt/c/learn/bitfield /mnt/c/learn/t1ha )
 
 add_executable(libgliblearn_proj main.c 
                                  arrayofstrings.c
@@ -21,7 +21,8 @@ add_executable(libgliblearn_proj main.c
                                  queue/gqueue.c
                                  asyncq/asyncq.c
                                  gmainloop/gmailoop.c
+                                 gmainloop/invoke.c
               )
 
 add_definitions(${GLIB_CFLAGS_OTHER})
-target_link_libraries(libgliblearn_proj ${GLIB_LIBRARIES} bitfield )
+target_link_libraries(libgliblearn_proj ${GLIB_LIBRARIES} bitfield t1ha )

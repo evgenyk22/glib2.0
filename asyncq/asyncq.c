@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "glib.h"
+#include "glib/gprintf.h"
 #include "sys/time.h"
 
 typedef struct {
@@ -90,6 +91,7 @@ gboolean tmo_clbk (gpointer data) {
     return TRUE;
 }
 
+
 void main_l() {
     print_msg_tmstm("started\n");
     int timeout = 5;
@@ -98,3 +100,76 @@ void main_l() {
     g_timeout_add_seconds (timeout,tmo_clbk,"timeout callback");
     g_main_loop_run(mainloop);
 }
+
+GAsyncQueue*   async_queue;
+
+/*
+typedef struct {
+    GSource        parent;
+    GAsyncQueue*   queue;
+    GDestroyNotify destroy_msg;
+} MessageQueueSource;
+
+static gboolean dispatch( GSource*    source,
+                          GSourceFunc callback,
+                          gpointer    user_data)  
+{
+
+    MessageQueueSource* msg_queue_source = ( MessageQueueSource* ) source;
+       
+}
+*/
+gpointer consumer (gpointer data) {
+    gint* user_data;
+
+    while (1) {
+        g_printf("%s in\n",__func__);
+        g_async_queue_lock(async_queue);
+        user_data = (gint*)g_async_queue_pop_unlocked(async_queue);
+        g_printf("%s pop %d\n",__func__,*user_data);
+        g_free(user_data);
+        g_printf ("gueue length %d\n", g_async_queue_length_unlocked(async_queue));
+        g_async_queue_unlock(async_queue);
+        g_usleep(2000000);
+    }
+    return NULL;
+}
+
+
+gpointer producer (gpointer notused) {
+    gint* tmp;
+    gint count = 0;
+
+    while (1)
+    {
+       g_printf("%s in\n",__func__);
+       tmp = g_new0(gint,1);
+       *tmp = count++;
+       g_async_queue_lock(async_queue);
+       g_async_queue_push_unlocked(async_queue,tmp);
+       g_printf("%s count %d\n",__func__,count);
+       g_async_queue_unlock(async_queue);
+       g_usleep(1000000);
+    }
+    return NULL;
+}
+
+void test_run () {
+    GThread *thread1=NULL , *thread2 = NULL;
+    async_queue = g_async_queue_new();
+    thread2 = g_thread_new("producer",producer,NULL);
+    g_usleep(1000000);
+    thread1 = g_thread_new("consumer" , consumer , NULL);
+    g_thread_join(thread1);
+    g_thread_join(thread2);
+
+    g_printf("func %s out\n",__func__);
+}
+
+typedef struct {
+    GSource parent;
+    GAsyncQueue* queue;
+    GDestroyNotify destroy_msg;
+} MsgQueueSource;
+
+typedef gboolean (*MsgQueueSourceFunc) (gpointer msg , gpointer );

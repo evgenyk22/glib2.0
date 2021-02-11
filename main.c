@@ -37,6 +37,10 @@ int main (int argc , char* argv[]) {
     //main_l();
     //runmloop1 ();
     //runloop3();
-    testConstruct ();
+    //testConstruct ();
+    //test_invoke();
+    //test_run ();
+    //test_mloop();
+    testGTreeFill ();
     return 0;   
 }

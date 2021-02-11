@@ -59,7 +59,7 @@ void runloop2 () {
 }
 
 gboolean prepare (GSource* src , gint* timeout_) {
-    *timeout_ = 2000;
+    *timeout_ = 1000;
     return FALSE;
 }
 
@@ -202,4 +202,45 @@ void testConstruct () {
     g_async_queue_unref(q);
     g_source_unref(src);
     //g_print("compleated , no errors\n");    
+}
+
+
+gboolean print1 (gpointer data) {
+    static int cnt = 0;
+
+    if ( cnt > 5 ) {
+        return FALSE;
+    }
+    printf("----cnt=%d\n",cnt++);
+    return TRUE;
+}
+
+gboolean terminate_loop (gpointer data) {
+    GMainLoop* loop = (GMainLoop*) data;
+
+    g_printf("Before quit %s %d\n",__func__,g_main_loop_is_running(loop));
+    g_main_loop_quit(loop);
+}
+
+gboolean idle_hello (gpointer data) {
+    g_printf("%s %s %s\n",__func__,"hello", data);
+    return FALSE;
+}
+
+gboolean idle_goodby (gpointer data) {
+    g_printf("%s %s %s\n",__func__,"good by",data);
+    return FALSE;
+}
+
+int test_mloop() {
+    GMainLoop* loop = g_main_loop_new(NULL,FALSE);
+    g_timeout_add(500,print1,NULL);
+    g_timeout_add(5000,terminate_loop,loop);
+
+    g_idle_add(idle_hello,"Li Si Zin");
+    g_idle_add(idle_goodby,"Li Si Zin");
+
+    g_main_loop_run(loop);
+
+    g_printf ("After loop ended %d \n",g_main_loop_is_running(loop));
 }
